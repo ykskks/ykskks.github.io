@@ -8,7 +8,21 @@
   <title>
     PyTorchでt-SNEを実装 - Blog
   </title>
-  <meta name="description" content="PyTorchを用いたSNE及びt-SNEの実装例とMNISTデータでの実行例" />
+  <meta name="description" content="概要 高次元データの可視化によく用いられるt-SNEの動作を理解するために、論文を読んで実装してみることにしました。パラメータ更新時の勾配計算で楽をしたいのでPyTorchで実装します。
+基本的には元論文を参考に実装を行いました。
+今回使ったコードはGithubにあげています。
+t-SNE自体の解説記事ではありません。そのためt-SNEを既にある程度理解しているものと想定しています。
+SNE t-SNEには前身であるSNEなる手法が存在し、t-SNEはSNEの弱点を補った手法です。そこでまずはSNEを実装します。
+詳細は論文を参考して頂きたいのですが、大まかな流れは以下の通り。
+ 入力データ $ X \in R ^ {N \times d} $ 指定するパラメータは主にn_componentsとperplexity。前者は圧縮したい次元数で後者は後ほど説明。 出力は低次元に圧縮されたデータ $ y \in R ^ {N \times ncomponents} $    $ y $ をランダムに初期化
+  高次元空間の各データポイントに対応する正規分布の分散を指定されたperplexityから求める。
+  高次元空間における各データポイント間の類似度を求める。
+  収束するまで以下を繰り返し
+ 低次元空間における各データポイント間の類似度を求める。 高次元空間と低次元空間における類似度の分布が近づく方向へ $ y $ を更新    perplexityですが、高次元における各データポイントの類似度 $ p_{j|i} $ を自分以外の全ての $ j $ について求めたもののシャノンエントロピーとして定義されています。
+つまりは、SNEは高次元の類似度を低次元でも保つように低次元表現を学習しますが、その高次元の類似度を算出する際に各データポイントの近傍をどれくらいまで考慮するのか、ということを調節していると考えられます。
+極端に考えれば、perplexityをめちゃくちゃ小さくすると各データポイントの類似度のエントロピーが小さいことを意味するので、対応する正規分布の分散は小さいものに設定している、つまり本当に近傍にあるデータポイントのみを考慮して類似度を算出していると考えられます。
+詳しくは論文を参照ください。
+注意点   論文では、正規分布の分散を二部探索で求めているとの記述がありましたが、以下の実装では単に範囲を決め打ちして最も指定のperplexityに近いものを選んでいます。" />
   <meta name="author" content="kohei" />
   <meta name="generator" content="Hugo 0.87.0" /><link
     rel="stylesheet"
@@ -19,20 +33,62 @@
   
 
   <meta property="og:title" content="PyTorchでt-SNEを実装" />
-<meta property="og:description" content="PyTorchを用いたSNE及びt-SNEの実装例とMNISTデータでの実行例" />
+<meta property="og:description" content="概要 高次元データの可視化によく用いられるt-SNEの動作を理解するために、論文を読んで実装してみることにしました。パラメータ更新時の勾配計算で楽をしたいのでPyTorchで実装します。
+基本的には元論文を参考に実装を行いました。
+今回使ったコードはGithubにあげています。
+t-SNE自体の解説記事ではありません。そのためt-SNEを既にある程度理解しているものと想定しています。
+SNE t-SNEには前身であるSNEなる手法が存在し、t-SNEはSNEの弱点を補った手法です。そこでまずはSNEを実装します。
+詳細は論文を参考して頂きたいのですが、大まかな流れは以下の通り。
+ 入力データ $ X \in R ^ {N \times d} $ 指定するパラメータは主にn_componentsとperplexity。前者は圧縮したい次元数で後者は後ほど説明。 出力は低次元に圧縮されたデータ $ y \in R ^ {N \times ncomponents} $    $ y $ をランダムに初期化
+  高次元空間の各データポイントに対応する正規分布の分散を指定されたperplexityから求める。
+  高次元空間における各データポイント間の類似度を求める。
+  収束するまで以下を繰り返し
+ 低次元空間における各データポイント間の類似度を求める。 高次元空間と低次元空間における類似度の分布が近づく方向へ $ y $ を更新    perplexityですが、高次元における各データポイントの類似度 $ p_{j|i} $ を自分以外の全ての $ j $ について求めたもののシャノンエントロピーとして定義されています。
+つまりは、SNEは高次元の類似度を低次元でも保つように低次元表現を学習しますが、その高次元の類似度を算出する際に各データポイントの近傍をどれくらいまで考慮するのか、ということを調節していると考えられます。
+極端に考えれば、perplexityをめちゃくちゃ小さくすると各データポイントの類似度のエントロピーが小さいことを意味するので、対応する正規分布の分散は小さいものに設定している、つまり本当に近傍にあるデータポイントのみを考慮して類似度を算出していると考えられます。
+詳しくは論文を参照ください。
+注意点   論文では、正規分布の分散を二部探索で求めているとの記述がありましたが、以下の実装では単に範囲を決め打ちして最も指定のperplexityに近いものを選んでいます。" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://ykskks.github.io/blog/tsne-pytorch/" /><meta property="article:section" content="blog" />
-<meta property="article:published_time" content="2021-07-15T00:00:00+00:00" />
-<meta property="article:modified_time" content="2021-07-15T00:00:00+00:00" />
+<meta property="article:published_time" content="2020-12-17T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-12-17T00:00:00+00:00" />
 
 
   <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="PyTorchでt-SNEを実装"/>
-<meta name="twitter:description" content="PyTorchを用いたSNE及びt-SNEの実装例とMNISTデータでの実行例"/>
+<meta name="twitter:description" content="概要 高次元データの可視化によく用いられるt-SNEの動作を理解するために、論文を読んで実装してみることにしました。パラメータ更新時の勾配計算で楽をしたいのでPyTorchで実装します。
+基本的には元論文を参考に実装を行いました。
+今回使ったコードはGithubにあげています。
+t-SNE自体の解説記事ではありません。そのためt-SNEを既にある程度理解しているものと想定しています。
+SNE t-SNEには前身であるSNEなる手法が存在し、t-SNEはSNEの弱点を補った手法です。そこでまずはSNEを実装します。
+詳細は論文を参考して頂きたいのですが、大まかな流れは以下の通り。
+ 入力データ $ X \in R ^ {N \times d} $ 指定するパラメータは主にn_componentsとperplexity。前者は圧縮したい次元数で後者は後ほど説明。 出力は低次元に圧縮されたデータ $ y \in R ^ {N \times ncomponents} $    $ y $ をランダムに初期化
+  高次元空間の各データポイントに対応する正規分布の分散を指定されたperplexityから求める。
+  高次元空間における各データポイント間の類似度を求める。
+  収束するまで以下を繰り返し
+ 低次元空間における各データポイント間の類似度を求める。 高次元空間と低次元空間における類似度の分布が近づく方向へ $ y $ を更新    perplexityですが、高次元における各データポイントの類似度 $ p_{j|i} $ を自分以外の全ての $ j $ について求めたもののシャノンエントロピーとして定義されています。
+つまりは、SNEは高次元の類似度を低次元でも保つように低次元表現を学習しますが、その高次元の類似度を算出する際に各データポイントの近傍をどれくらいまで考慮するのか、ということを調節していると考えられます。
+極端に考えれば、perplexityをめちゃくちゃ小さくすると各データポイントの類似度のエントロピーが小さいことを意味するので、対応する正規分布の分散は小さいものに設定している、つまり本当に近傍にあるデータポイントのみを考慮して類似度を算出していると考えられます。
+詳しくは論文を参照ください。
+注意点   論文では、正規分布の分散を二部探索で求めているとの記述がありましたが、以下の実装では単に範囲を決め打ちして最も指定のperplexityに近いものを選んでいます。"/>
 
   <meta itemprop="name" content="PyTorchでt-SNEを実装">
-<meta itemprop="description" content="PyTorchを用いたSNE及びt-SNEの実装例とMNISTデータでの実行例"><meta itemprop="datePublished" content="2021-07-15T00:00:00+00:00" />
-<meta itemprop="dateModified" content="2021-07-15T00:00:00+00:00" />
+<meta itemprop="description" content="概要 高次元データの可視化によく用いられるt-SNEの動作を理解するために、論文を読んで実装してみることにしました。パラメータ更新時の勾配計算で楽をしたいのでPyTorchで実装します。
+基本的には元論文を参考に実装を行いました。
+今回使ったコードはGithubにあげています。
+t-SNE自体の解説記事ではありません。そのためt-SNEを既にある程度理解しているものと想定しています。
+SNE t-SNEには前身であるSNEなる手法が存在し、t-SNEはSNEの弱点を補った手法です。そこでまずはSNEを実装します。
+詳細は論文を参考して頂きたいのですが、大まかな流れは以下の通り。
+ 入力データ $ X \in R ^ {N \times d} $ 指定するパラメータは主にn_componentsとperplexity。前者は圧縮したい次元数で後者は後ほど説明。 出力は低次元に圧縮されたデータ $ y \in R ^ {N \times ncomponents} $    $ y $ をランダムに初期化
+  高次元空間の各データポイントに対応する正規分布の分散を指定されたperplexityから求める。
+  高次元空間における各データポイント間の類似度を求める。
+  収束するまで以下を繰り返し
+ 低次元空間における各データポイント間の類似度を求める。 高次元空間と低次元空間における類似度の分布が近づく方向へ $ y $ を更新    perplexityですが、高次元における各データポイントの類似度 $ p_{j|i} $ を自分以外の全ての $ j $ について求めたもののシャノンエントロピーとして定義されています。
+つまりは、SNEは高次元の類似度を低次元でも保つように低次元表現を学習しますが、その高次元の類似度を算出する際に各データポイントの近傍をどれくらいまで考慮するのか、ということを調節していると考えられます。
+極端に考えれば、perplexityをめちゃくちゃ小さくすると各データポイントの類似度のエントロピーが小さいことを意味するので、対応する正規分布の分散は小さいものに設定している、つまり本当に近傍にあるデータポイントのみを考慮して類似度を算出していると考えられます。
+詳しくは論文を参照ください。
+注意点   論文では、正規分布の分散を二部探索で求めているとの記述がありましたが、以下の実装では単に範囲を決め打ちして最も指定のperplexityに近いものを選んでいます。"><meta itemprop="datePublished" content="2020-12-17T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2020-12-17T00:00:00+00:00" />
 <meta itemprop="wordCount" content="556">
 <meta itemprop="keywords" content="PyTorch,機械学習," />
 </head>
@@ -90,7 +146,7 @@
   <div class="relative max-w-5xl mx-auto px-4">
     <img src="/image/tsne-pytorch/tsne.png" class="rounded-lg shadow-sm w-full object-contain" />
     <div class="absolute top-4 right-8 rounded shadow bg-white text-gray-900 dark:bg-gray-900 dark:text-white px-2 py-0.5">
-      July 15, 2021
+      December 17, 2020
     </div>
   </div>
   
