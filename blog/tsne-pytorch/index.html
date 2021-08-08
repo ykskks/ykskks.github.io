@@ -21,7 +21,7 @@
   <meta property="og:title" content="PyTorchでt-SNEを実装" />
 <meta property="og:description" content="Guide to emoji usage in Hugo" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://ykskks.github.io/blog/test/" /><meta property="article:section" content="blog" />
+<meta property="og:url" content="https://ykskks.github.io/blog/tsne-pytorch/" /><meta property="article:section" content="blog" />
 <meta property="article:published_time" content="2021-07-15T00:00:00+00:00" />
 <meta property="article:modified_time" content="2021-07-15T00:00:00+00:00" />
 
@@ -33,8 +33,8 @@
   <meta itemprop="name" content="PyTorchでt-SNEを実装">
 <meta itemprop="description" content="Guide to emoji usage in Hugo"><meta itemprop="datePublished" content="2021-07-15T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2021-07-15T00:00:00+00:00" />
-<meta itemprop="wordCount" content="545">
-<meta itemprop="keywords" content="emoji," />
+<meta itemprop="wordCount" content="551">
+<meta itemprop="keywords" content="PyTorch,機械学習," />
 </head>
 <body class="dark:bg-gray-800 dark:text-white relative"><header class="container flex justify-around md:justify-between gap-4 flex-wrap p-6 mx-auto">
   <a href="https://ykskks.github.io/" class="capitalize font-extrabold text-2xl">
@@ -108,16 +108,16 @@
 <p>t-SNEには前身であるSNEなる手法が存在し、t-SNEはSNEの弱点を補った手法です。そこでまずはSNEを実装します。</p>
 <p>詳細は論文を参考して頂きたいのですが、大まかな流れは以下の通り。</p>
 <ul>
-<li>入力データ [tex:X] (N x d行列)</li>
-<li>指定するパラメータは主に<code>n_components</code>と<code>perplexity</code>。前者は圧縮したい次元数で後者は後ほど説明。</li>
-<li>出力は低次元に圧縮されたデータ [tex:y] (N x <code>n_components</code>行列)</li>
+<li>入力データ $ X $ (N x d行列)</li>
+<li>指定するパラメータは主に<strong>n_components</strong>と<strong>perplexity</strong>。前者は圧縮したい次元数で後者は後ほど説明。</li>
+<li>出力は低次元に圧縮されたデータ $ y $ (N x <strong>n_components</strong>行列)</li>
 </ul>
 <ol>
 <li>
-<p>[tex:y] をランダムに初期化</p>
+<p>$ y $ をランダムに初期化</p>
 </li>
 <li>
-<p>高次元空間の各データポイントに対応する正規分布の分散を指定された<code>perplexity</code>から求める。</p>
+<p>高次元空間の各データポイントに対応する正規分布の分散を指定された<strong>perplexity</strong>から求める。</p>
 </li>
 <li>
 <p>高次元空間における各データポイント間の類似度を求める。</p>
@@ -126,18 +126,18 @@
 <p>収束するまで以下を繰り返し</p>
 <ul>
 <li>低次元空間における各データポイント間の類似度を求める。</li>
-<li>高次元空間と低次元空間における類似度の分布が近づく方向へ [tex:y] を更新</li>
+<li>高次元空間と低次元空間における類似度の分布が近づく方向へ $ y $ を更新</li>
 </ul>
 </li>
 </ol>
-<p><code>perplexity</code>ですが、高次元における各データポイントの類似度( [tex:p_{j|i}] を自分以外の全ての [tex:j] について求めたもの)のシャノンエントロピーとして定義されています。</p>
+<p><strong>perplexity</strong>ですが、高次元における各データポイントの類似度 $ p_{j|i} $ を自分以外の全ての $ j $ について求めたもののシャノンエントロピーとして定義されています。</p>
 <p>つまりは、SNEは高次元の類似度を低次元でも保つように低次元表現を学習しますが、その高次元の類似度を算出する際に各データポイントの<strong>近傍をどれくらいまで考慮するのか</strong>、ということを調節していると考えられます。</p>
-<p>極端に考えれば、<code>perplexity</code>をめちゃくちゃ小さくすると各データポイントの類似度のエントロピーが小さいことを意味するので、対応する正規分布の分散は小さいものに設定している、つまり本当に近傍にあるデータポイントのみを考慮して類似度を算出していると考えられます。</p>
+<p>極端に考えれば、<strong>perplexity</strong>をめちゃくちゃ小さくすると各データポイントの類似度のエントロピーが小さいことを意味するので、対応する正規分布の分散は小さいものに設定している、つまり本当に近傍にあるデータポイントのみを考慮して類似度を算出していると考えられます。</p>
 <p>詳しくは論文を参照ください。</p>
 <h3 id="注意点">注意点</h3>
 <ul>
 <li>
-<p>論文では、正規分布の分散を二部探索で求めているとの記述がありましたが、以下の実装では単に範囲を決め打ちして最も指定の<code>perplexity</code>に近いものを選んでいます。</p>
+<p>論文では、正規分布の分散を二部探索で求めているとの記述がありましたが、以下の実装では単に範囲を決め打ちして最も指定の<strong>perplexity</strong>に近いものを選んでいます。</p>
 </li>
 <li>
 <p>引数のmodeは高次元での計算であるか、低次元での計算であるかのフラグです。SNEでは影響がないのですが、後ほどのt-SNEの実装のためにあえて残しています。</p>
@@ -260,23 +260,23 @@ X_pca <span style="color:#ff79c6">=</span> pca<span style="color:#ff79c6">.</spa
     plt<span style="color:#ff79c6">.</span>show()
 
 plot_result(X_pca, y, <span style="color:#f1fa8c">&#34;PCA&#34;</span>)
-</code></pre></div><p>[f:id:ykskks:20201217233657p:plain]</p>
+</code></pre></div><img src="image/tsne-pytorch/pca.png">
 <p>かなり重なりが多く、データの構造をうまく二次元へ落とし込めていないように見受けられます。</p>
 <p>次にSNEですが</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">sne <span style="color:#ff79c6">=</span> SNE(n_components<span style="color:#ff79c6">=</span><span style="color:#bd93f9">2</span>, perplexity<span style="color:#ff79c6">=</span><span style="color:#bd93f9">50</span>, n_epochs<span style="color:#ff79c6">=</span><span style="color:#bd93f9">200</span>, lr<span style="color:#ff79c6">=</span><span style="color:#bd93f9">0.1</span>)
 X_sne <span style="color:#ff79c6">=</span> sne<span style="color:#ff79c6">.</span>fit_transform(X_sc)
 
 plot_result(X_sne, y, <span style="color:#f1fa8c">&#34;SNE&#34;</span>)
-</code></pre></div><p>[f:id:ykskks:20201217233733p:plain]</p>
+</code></pre></div><img src="image/tsne-pytorch/sne_loss.png">
 <p>100イテレーションくらいで大体収束してるのがわかります。</p>
-<p>[f:id:ykskks:20201217233745p:plain]</p>
+<img src="image/tsne-pytorch/sne.png">
 <p>全体としてはPCAよりも各数字がギュッとまとまっており、重なりも少なく、データの構造をよく捉えているように見えます。</p>
 <h2 id="t-sne">t-SNE</h2>
 <p>いよいよt-SNEですが、SNEまで実装してしまえば、大したことはありません。</p>
 <p>主な変更点は以下の二つです。（詳細は論文を参照願います）</p>
 <ul>
 <li><strong>symmetric</strong>な類似度の導入</li>
-<li>低次元空間の類似度の計算に正規分布ではなく、裾の重い自由度1の<code>t分布</code>を用いる</li>
+<li>低次元空間の類似度の計算に正規分布ではなく、裾の重い自由度1の<strong>t分布</strong>を用いる</li>
 </ul>
 <p>実際、上記の2点以外はSNEと基本的に同じなのでSNEクラスを継承します。</p>
 <p>t-SNEでは先ほども述べたように、低次元と高次元で類似度の算出方法が異なるのでその部分の変更を加えます。</p>
@@ -301,18 +301,17 @@ plot_result(X_sne, y, <span style="color:#f1fa8c">&#34;SNE&#34;</span>)
 X_tsne <span style="color:#ff79c6">=</span> tsne<span style="color:#ff79c6">.</span>fit_transform(X_sc)
 
 plot_result(X_tsne, y, <span style="color:#f1fa8c">&#34;t-SNE&#34;</span>)
-</code></pre></div><p>[f:id:ykskks:20201217233759p:plain]</p>
-<p>[f:id:ykskks:20201217233812p:plain]</p>
+</code></pre></div><img src="image/tsne-pytorch/tsne_loss.png">
+<img src="image/tsne-pytorch/tsne.png">
 <p>どうでしょうか？</p>
 <p>主観ですが、各グループごとのまとまり・各グループ間の分離ともにかなりいい感じになり、
 より見た目がすっきりした感があります。（SNEはごちゃごちゃ全体が固まっている感じ、論文でcrowding problemと呼ばれているもの？）</p>
 <p>perplexityの値は割と敏感らしいのでもう少し調節しても良いと思いますが、とりあえずそれっぽい結果が出ているのでとりあえずここまでにしようと思います。</p>
 <p>（ちなみに）</p>
 <p>青色で表されている2がうまくまとまってないのですが、これは今回のデータの中にかなり性質の違う2たちが混在していたことによるようです。（文字の傾きにかなりばらつきがある）</p>
-<p>[f:id:ykskks:20201217233842p:plain]</p>
 <h2 id="todo">TODO</h2>
 <ul>
-<li><code>perplexity</code>の部分の探索をちゃんとやる</li>
+<li><strong>perplexity</strong>の部分の探索をちゃんとやる</li>
 <li>高速化(高次元空間で遠いデータポイント間の類似度をゼロにしてしまうなど近似手法があるようです&hellip;)</li>
 </ul>
 <p>何か間違い等ありましたら遠慮なくご指摘ください。</p>
@@ -394,8 +393,9 @@ plot_result(X_tsne, y, <span style="color:#f1fa8c">&#34;t-SNE&#34;</span>)
     
   </span>
   <span onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="p-1 cursor-pointer">
-    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" stroke-width="1.5"
+      stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
       <path d="M18 15l-6 -6l-6 6h12" />
     </svg>
   </span>
@@ -457,9 +457,21 @@ plot_result(X_tsne, y, <span style="color:#f1fa8c">&#34;t-SNE&#34;</span>)
   }
 
   const isDark = localStorage.getItem('darkmode');
-  if(isDark && isDark === 'dark') {
+  if (isDark && isDark === 'dark') {
     toggleDarkMode();
   }
 </script>
+
+<script>
+  window.MathJax = {
+    tex: {
+      tags: 'ams',  
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    },
+  };
+</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-chtml.js"></script>
+
 </body>
 </html>
