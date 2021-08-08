@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="icon" href="/favicon.ico">
+
+  <title>
+    PyTorchでt-SNEを実装 - Blog
+  </title>
+  <meta name="description" content="Guide to emoji usage in Hugo" />
+  <meta name="author" content="kohei" />
+  <meta name="generator" content="Hugo 0.87.0" /><link
+    rel="stylesheet"
+    href="https://blist.vercel.app/css/styles.min.c1c1221312542aae2891eebeaf81251f6b99f5ecf21a222365f966300a88b15d.css"
+    integrity="sha256-wcEiExJUKq4oke6+r4ElH2uZ9ezyGiIjZflmMAqIsV0="
+  />
+  
+  
+
+  <meta property="og:title" content="PyTorchでt-SNEを実装" />
+<meta property="og:description" content="Guide to emoji usage in Hugo" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://blist.vercel.app/blog/test/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2021-07-15T00:00:00+00:00" />
+<meta property="article:modified_time" content="2021-07-15T00:00:00+00:00" />
+
+
+  <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="PyTorchでt-SNEを実装"/>
+<meta name="twitter:description" content="Guide to emoji usage in Hugo"/>
+
+  <meta itemprop="name" content="PyTorchでt-SNEを実装">
+<meta itemprop="description" content="Guide to emoji usage in Hugo"><meta itemprop="datePublished" content="2021-07-15T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2021-07-15T00:00:00+00:00" />
+<meta itemprop="wordCount" content="545">
+<meta itemprop="keywords" content="emoji," />
+</head>
+<body class="dark:bg-gray-800 dark:text-white relative"><header class="container flex justify-around md:justify-between gap-4 flex-wrap p-6 mx-auto">
+  <a href="https://blist.vercel.app/" class="capitalize font-extrabold text-2xl">
+    Blog
+  </a>
+  <ul class="flex items-center gap-4 lg:gap-6">
+
+    
+      <li><a href="/about">About</a></li>
+    
+
+    
+      <li><a href="https://blist.vercel.app/blog/">Blogs</a></li>
+    
+
+    
+    <li class="grid place-items-center">
+      <span class="open-search inline-block cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-width="1.5"
+          stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+          <circle cx="10" cy="10" r="7" />
+          <line x1="21" y1="21" x2="15" y2="15" />
+        </svg>
+      </span>
+    </li>
+    
+
+    
+    <li class="grid place-items-center">
+      <span class="toggle-dark-mode inline-block cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5"
+          stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <circle cx="12" cy="12" r="3" />
+          <line x1="12" y1="5" x2="12" y2="5.01" />
+          <line x1="17" y1="7" x2="17" y2="7.01" />
+          <line x1="19" y1="12" x2="19" y2="12.01" />
+          <line x1="17" y1="17" x2="17" y2="17.01" />
+          <line x1="12" y1="19" x2="12" y2="19.01" />
+          <line x1="7" y1="17" x2="7" y2="17.01" />
+          <line x1="5" y1="12" x2="5" y2="12.01" />
+          <line x1="7" y1="7" x2="7" y2="7.01" />
+        </svg>
+      </span>
+    </li>
+    
+  </ul>
+</header>
+<main>
+
+  
+  <div class="relative max-w-5xl mx-auto px-4">
+    <img src="https://picsum.photos/id/1050/400/250" class="rounded-lg shadow-sm w-full object-contain" />
+    <div class="absolute top-4 right-8 rounded shadow bg-white text-gray-900 dark:bg-gray-900 dark:text-white px-2 py-0.5">
+      July 15, 2021
+    </div>
+  </div>
+  
+
+  <article class="prose lg:prose-lg mx-auto my-8 dark:prose-dark px-4">
+
+    <h1 class="text-2xl font-bold mb-2">PyTorchでt-SNEを実装</h1>
+
+    <h2 id="概要">概要</h2>
+<p>高次元データの可視化によく用いられるt-SNEの動作を理解するために、論文を読んで実装してみることにしました。パラメータ更新時の勾配計算で楽をしたいのでPyTorchで実装します。</p>
+<p>基本的には<a href="https://lvdmaaten.github.io/publications/papers/JMLR_2008.pdf">元論文</a>を参考に実装を行いました。</p>
+<p>今回使ったコードは<a href="https://github.com/ykskks/tsne-in-pytorch">Github</a>にあげています。</p>
+<p>t-SNE自体の解説記事ではありません。そのためt-SNEを既にある程度理解しているものと想定しています。</p>
+<h2 id="sne">SNE</h2>
+<p>t-SNEには前身であるSNEなる手法が存在し、t-SNEはSNEの弱点を補った手法です。そこでまずはSNEを実装します。</p>
+<p>詳細は論文を参考して頂きたいのですが、大まかな流れは以下の通り。</p>
+<ul>
+<li>入力データ [tex:X] (N x d行列)</li>
+<li>指定するパラメータは主に<code>n_components</code>と<code>perplexity</code>。前者は圧縮したい次元数で後者は後ほど説明。</li>
+<li>出力は低次元に圧縮されたデータ [tex:y] (N x <code>n_components</code>行列)</li>
+</ul>
+<ol>
+<li>
+<p>[tex:y] をランダムに初期化</p>
+</li>
+<li>
+<p>高次元空間の各データポイントに対応する正規分布の分散を指定された<code>perplexity</code>から求める。</p>
+</li>
+<li>
+<p>高次元空間における各データポイント間の類似度を求める。</p>
+</li>
+<li>
+<p>収束するまで以下を繰り返し</p>
+<ul>
+<li>低次元空間における各データポイント間の類似度を求める。</li>
+<li>高次元空間と低次元空間における類似度の分布が近づく方向へ [tex:y] を更新</li>
+</ul>
+</li>
+</ol>
+<p><code>perplexity</code>ですが、高次元における各データポイントの類似度( [tex:p_{j|i}] を自分以外の全ての [tex:j] について求めたもの)のシャノンエントロピーとして定義されています。</p>
+<p>つまりは、SNEは高次元の類似度を低次元でも保つように低次元表現を学習しますが、その高次元の類似度を算出する際に各データポイントの<strong>近傍をどれくらいまで考慮するのか</strong>、ということを調節していると考えられます。</p>
+<p>極端に考えれば、<code>perplexity</code>をめちゃくちゃ小さくすると各データポイントの類似度のエントロピーが小さいことを意味するので、対応する正規分布の分散は小さいものに設定している、つまり本当に近傍にあるデータポイントのみを考慮して類似度を算出していると考えられます。</p>
+<p>詳しくは論文を参照ください。</p>
+<h3 id="注意点">注意点</h3>
+<ul>
+<li>
+<p>論文では、正規分布の分散を二部探索で求めているとの記述がありましたが、以下の実装では単に範囲を決め打ちして最も指定の<code>perplexity</code>に近いものを選んでいます。</p>
+</li>
+<li>
+<p>引数のmodeは高次元での計算であるか、低次元での計算であるかのフラグです。SNEでは影響がないのですが、後ほどのt-SNEの実装のためにあえて残しています。</p>
+</li>
+<li>
+<p>正直あまり効率のいいコードではないかもしれません。何かあれば是非ご指摘ください。</p>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#ff79c6">from</span> itertools <span style="color:#ff79c6">import</span> product
+
+<span style="color:#ff79c6">import</span> numpy <span style="color:#ff79c6">as</span> np
+<span style="color:#ff79c6">import</span> pandas <span style="color:#ff79c6">as</span> pd
+<span style="color:#ff79c6">from</span> sklearn.datasets <span style="color:#ff79c6">import</span> load_digits
+<span style="color:#ff79c6">from</span> sklearn.decomposition <span style="color:#ff79c6">import</span> PCA
+<span style="color:#ff79c6">from</span> sklearn.preprocessing <span style="color:#ff79c6">import</span> StandardScaler
+<span style="color:#ff79c6">from</span> tqdm <span style="color:#ff79c6">import</span> tqdm
+<span style="color:#ff79c6">import</span> torch
+<span style="color:#ff79c6">import</span> torch.nn <span style="color:#ff79c6">as</span> nn
+<span style="color:#ff79c6">import</span> torch.nn.functional <span style="color:#ff79c6">as</span> F
+<span style="color:#ff79c6">import</span> torch.optim <span style="color:#ff79c6">as</span> optim
+<span style="color:#ff79c6">import</span> matplotlib.pyplot <span style="color:#ff79c6">as</span> plt
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#ff79c6">class</span> <span style="color:#50fa7b">SNE</span>:
+    <span style="color:#ff79c6">def</span> __init__(self, n_components, perplexity, lr<span style="color:#ff79c6">=</span><span style="color:#bd93f9">0.01</span>, n_epochs<span style="color:#ff79c6">=</span><span style="color:#bd93f9">100</span>):
+        self<span style="color:#ff79c6">.</span>n_components <span style="color:#ff79c6">=</span> n_components
+        self<span style="color:#ff79c6">.</span>perplexity <span style="color:#ff79c6">=</span> perplexity
+        self<span style="color:#ff79c6">.</span>lr <span style="color:#ff79c6">=</span> lr
+        self<span style="color:#ff79c6">.</span>n_epochs <span style="color:#ff79c6">=</span> n_epochs
+
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">_compute_perplexity_from_sigma</span>(self, data_matrix, center_idx, sigma):
+        similarities <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>_similarity(data_matrix[center_idx, :], data_matrix, sigma, <span style="color:#f1fa8c">&#34;h&#34;</span>)
+        p <span style="color:#ff79c6">=</span> similarities <span style="color:#ff79c6">/</span> similarities<span style="color:#ff79c6">.</span>sum()
+        shannon <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">-</span> (p[p <span style="color:#ff79c6">!=</span> <span style="color:#bd93f9">0</span>] <span style="color:#ff79c6">*</span> torch<span style="color:#ff79c6">.</span>log2(p[p <span style="color:#ff79c6">!=</span> <span style="color:#bd93f9">0</span>]))<span style="color:#ff79c6">.</span>sum()  <span style="color:#6272a4"># log(0)回避</span>
+        perp <span style="color:#ff79c6">=</span> <span style="color:#bd93f9">2</span> <span style="color:#ff79c6">**</span> shannon<span style="color:#ff79c6">.</span>item()
+        <span style="color:#ff79c6">return</span> perp
+
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">_search_sigmas</span>(self, data_matrix):
+        sigmas <span style="color:#ff79c6">=</span> torch<span style="color:#ff79c6">.</span>zeros(self<span style="color:#ff79c6">.</span>N)
+        sigma_range <span style="color:#ff79c6">=</span> np<span style="color:#ff79c6">.</span>arange(<span style="color:#bd93f9">0.1</span>, <span style="color:#bd93f9">0.6</span>, <span style="color:#bd93f9">0.1</span>)
+        <span style="color:#ff79c6">for</span> i <span style="color:#ff79c6">in</span> tqdm(<span style="color:#8be9fd;font-style:italic">range</span>(self<span style="color:#ff79c6">.</span>N), desc<span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;search sigma&#34;</span>):
+            perps <span style="color:#ff79c6">=</span> np<span style="color:#ff79c6">.</span>zeros(<span style="color:#8be9fd;font-style:italic">len</span>(sigma_range))
+            <span style="color:#ff79c6">for</span> j, sigma <span style="color:#ff79c6">in</span> <span style="color:#8be9fd;font-style:italic">enumerate</span>(sigma_range):
+                perp <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>_compute_perplexity_from_sigma(data_matrix, i, sigma)
+                perps[j] <span style="color:#ff79c6">=</span> perp
+            best_idx <span style="color:#ff79c6">=</span> (np<span style="color:#ff79c6">.</span>abs(perps <span style="color:#ff79c6">-</span> self<span style="color:#ff79c6">.</span>perplexity))<span style="color:#ff79c6">.</span>argmin()
+            best_sigma <span style="color:#ff79c6">=</span> sigma_range[best_idx]
+            sigmas[i] <span style="color:#ff79c6">=</span> best_sigma
+        <span style="color:#ff79c6">return</span> sigmas
+
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">_similarity</span>(self, x1, x2, sigma, mode):
+        <span style="color:#6272a4"># SNEでは高次元でも低次元でも正規分布を用いる</span>
+        <span style="color:#ff79c6">return</span> torch<span style="color:#ff79c6">.</span>exp(<span style="color:#ff79c6">-</span> ((x1 <span style="color:#ff79c6">-</span> x2) <span style="color:#ff79c6">**</span> <span style="color:#bd93f9">2</span>)<span style="color:#ff79c6">.</span>sum(dim<span style="color:#ff79c6">=</span><span style="color:#bd93f9">1</span>) <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">2</span> <span style="color:#ff79c6">*</span> (sigma <span style="color:#ff79c6">**</span> <span style="color:#bd93f9">2</span>))
+
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">_compute_similarity</span>(self, data_matrix, sigmas, mode):
+        similarities <span style="color:#ff79c6">=</span> torch<span style="color:#ff79c6">.</span>zeros((self<span style="color:#ff79c6">.</span>N, self<span style="color:#ff79c6">.</span>N))
+        <span style="color:#ff79c6">for</span> i <span style="color:#ff79c6">in</span> <span style="color:#8be9fd;font-style:italic">range</span>(self<span style="color:#ff79c6">.</span>N):
+            s_i <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>_similarity(data_matrix[i, :], data_matrix, sigmas[i], mode)
+            similarities[i] <span style="color:#ff79c6">=</span> s_i
+        <span style="color:#ff79c6">return</span> similarities
+
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">_compute_cond_prob</span>(self, similarities, mode):
+        <span style="color:#6272a4"># SNEではmodeにより類似性の計算変わらない</span>
+        cond_prob_matrix <span style="color:#ff79c6">=</span> torch<span style="color:#ff79c6">.</span>zeros((self<span style="color:#ff79c6">.</span>N, self<span style="color:#ff79c6">.</span>N))
+        <span style="color:#ff79c6">for</span> i <span style="color:#ff79c6">in</span> <span style="color:#8be9fd;font-style:italic">range</span>(self<span style="color:#ff79c6">.</span>N):
+            p_i <span style="color:#ff79c6">=</span> similarities[i] <span style="color:#ff79c6">/</span> similarities[i]<span style="color:#ff79c6">.</span>sum()
+            cond_prob_matrix[i] <span style="color:#ff79c6">=</span> p_i
+        <span style="color:#ff79c6">return</span> cond_prob_matrix
+
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">fit_transform</span>(self, X):
+        self<span style="color:#ff79c6">.</span>N <span style="color:#ff79c6">=</span> X<span style="color:#ff79c6">.</span>shape[<span style="color:#bd93f9">0</span>]
+        X <span style="color:#ff79c6">=</span> torch<span style="color:#ff79c6">.</span>tensor(X)
+
+        <span style="color:#6272a4"># 1. yをランダムに初期化</span>
+        y <span style="color:#ff79c6">=</span> torch<span style="color:#ff79c6">.</span>randn(size<span style="color:#ff79c6">=</span>(self<span style="color:#ff79c6">.</span>N, self<span style="color:#ff79c6">.</span>n_components), requires_grad<span style="color:#ff79c6">=</span><span style="color:#ff79c6">True</span>)
+        optimizer <span style="color:#ff79c6">=</span> optim<span style="color:#ff79c6">.</span>Adam([y], lr<span style="color:#ff79c6">=</span>self<span style="color:#ff79c6">.</span>lr)
+
+        <span style="color:#6272a4"># 2. 高次元空間の各データポイントに対応する正規分布の分散を指定されたperplexityから求める</span>
+        sigmas <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>_search_sigmas(X)
+
+        <span style="color:#6272a4"># 3. 高次元空間における各データポイント間の類似性を求める。</span>
+        X_similarities <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>_compute_similarity(X, sigmas, <span style="color:#f1fa8c">&#34;h&#34;</span>)
+        p <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>_compute_cond_prob(X_similarities, <span style="color:#f1fa8c">&#34;h&#34;</span>)
+
+        <span style="color:#6272a4"># 4. 収束するまで以下を繰り返し</span>
+        loss_history <span style="color:#ff79c6">=</span> []
+        <span style="color:#ff79c6">for</span> i <span style="color:#ff79c6">in</span> tqdm(<span style="color:#8be9fd;font-style:italic">range</span>(self<span style="color:#ff79c6">.</span>n_epochs), desc<span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;fitting&#34;</span>):
+            optimizer<span style="color:#ff79c6">.</span>zero_grad()
+            y_similarities <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>_compute_similarity(y, torch<span style="color:#ff79c6">.</span>ones(self<span style="color:#ff79c6">.</span>N) <span style="color:#ff79c6">/</span> (<span style="color:#bd93f9">2</span> <span style="color:#ff79c6">**</span> (<span style="color:#bd93f9">1</span><span style="color:#ff79c6">/</span><span style="color:#bd93f9">2</span>)), <span style="color:#f1fa8c">&#34;l&#34;</span>)
+            q <span style="color:#ff79c6">=</span> self<span style="color:#ff79c6">.</span>_compute_cond_prob(y_similarities, <span style="color:#f1fa8c">&#34;l&#34;</span>)
+
+            kl_loss <span style="color:#ff79c6">=</span> (p[p <span style="color:#ff79c6">!=</span> <span style="color:#bd93f9">0</span>] <span style="color:#ff79c6">*</span> (p[p <span style="color:#ff79c6">!=</span> <span style="color:#bd93f9">0</span>] <span style="color:#ff79c6">/</span> q[p <span style="color:#ff79c6">!=</span> <span style="color:#bd93f9">0</span>])<span style="color:#ff79c6">.</span>log())<span style="color:#ff79c6">.</span>mean()  <span style="color:#6272a4"># log(0)回避</span>
+            kl_loss<span style="color:#ff79c6">.</span>backward()
+            loss_history<span style="color:#ff79c6">.</span>append(kl_loss<span style="color:#ff79c6">.</span>item())
+            optimizer<span style="color:#ff79c6">.</span>step()
+
+        plt<span style="color:#ff79c6">.</span>plot(loss_history)
+        plt<span style="color:#ff79c6">.</span>xlabel(<span style="color:#f1fa8c">&#34;epoch&#34;</span>)
+        plt<span style="color:#ff79c6">.</span>ylabel(<span style="color:#f1fa8c">&#34;loss&#34;</span>)
+        <span style="color:#ff79c6">return</span> y<span style="color:#ff79c6">.</span>detach()<span style="color:#ff79c6">.</span>numpy()
+</code></pre></div><h3 id="結果">結果</h3>
+<p>digitsデータを使ってPCAとSNEによる二次元への次元圧縮の様子を見てみます。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">digits <span style="color:#ff79c6">=</span> load_digits()
+X, y <span style="color:#ff79c6">=</span> digits<span style="color:#ff79c6">.</span>data[:<span style="color:#bd93f9">200</span>, :], digits<span style="color:#ff79c6">.</span>target[:<span style="color:#bd93f9">200</span>]
+<span style="color:#8be9fd;font-style:italic">print</span>(X<span style="color:#ff79c6">.</span>shape, y<span style="color:#ff79c6">.</span>shape)
+<span style="color:#ff79c6">&gt;&gt;</span> (<span style="color:#bd93f9">200</span>, <span style="color:#bd93f9">64</span>) (<span style="color:#bd93f9">200</span>,)
+</code></pre></div><p>計算が重いのでサンプリングしてます。</p>
+<p>まずはPCA</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">sc <span style="color:#ff79c6">=</span> StandardScaler()
+X_sc <span style="color:#ff79c6">=</span> sc<span style="color:#ff79c6">.</span>fit_transform(X)
+
+pca <span style="color:#ff79c6">=</span> PCA(n_components<span style="color:#ff79c6">=</span><span style="color:#bd93f9">2</span>)
+X_pca <span style="color:#ff79c6">=</span> pca<span style="color:#ff79c6">.</span>fit_transform(X_sc)
+
+<span style="color:#ff79c6">def</span> <span style="color:#50fa7b">plot_result</span>(x_transformed, y, title):
+    fig, ax <span style="color:#ff79c6">=</span> plt<span style="color:#ff79c6">.</span>subplots(figsize<span style="color:#ff79c6">=</span>(<span style="color:#bd93f9">6</span>, <span style="color:#bd93f9">6</span>))
+    colors <span style="color:#ff79c6">=</span> [<span style="color:#f1fa8c">&#39;r&#39;</span>, <span style="color:#f1fa8c">&#39;g&#39;</span>, <span style="color:#f1fa8c">&#39;b&#39;</span>, <span style="color:#f1fa8c">&#39;c&#39;</span>, <span style="color:#f1fa8c">&#39;m&#39;</span>, <span style="color:#f1fa8c">&#39;y&#39;</span>, <span style="color:#f1fa8c">&#39;k&#39;</span>, <span style="color:#f1fa8c">&#39;pink&#39;</span>, <span style="color:#f1fa8c">&#39;orange&#39;</span>, <span style="color:#f1fa8c">&#39;purple&#39;</span>]
+    <span style="color:#ff79c6">for</span> c, label <span style="color:#ff79c6">in</span> <span style="color:#8be9fd;font-style:italic">zip</span>(colors, digits<span style="color:#ff79c6">.</span>target_names):
+        ax<span style="color:#ff79c6">.</span>scatter(x_transformed[y <span style="color:#ff79c6">==</span> <span style="color:#8be9fd;font-style:italic">int</span>(label), <span style="color:#bd93f9">0</span>], x_transformed[y <span style="color:#ff79c6">==</span> <span style="color:#8be9fd;font-style:italic">int</span>(label), <span style="color:#bd93f9">1</span>], color<span style="color:#ff79c6">=</span>c, label<span style="color:#ff79c6">=</span>label)
+        ax<span style="color:#ff79c6">.</span>legend()
+        ax<span style="color:#ff79c6">.</span>set_title(title, fontsize<span style="color:#ff79c6">=</span><span style="color:#bd93f9">16</span>)
+    plt<span style="color:#ff79c6">.</span>show()
+
+plot_result(X_pca, y, <span style="color:#f1fa8c">&#34;PCA&#34;</span>)
+</code></pre></div><p>[f:id:ykskks:20201217233657p:plain]</p>
+<p>かなり重なりが多く、データの構造をうまく二次元へ落とし込めていないように見受けられます。</p>
+<p>次にSNEですが</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">sne <span style="color:#ff79c6">=</span> SNE(n_components<span style="color:#ff79c6">=</span><span style="color:#bd93f9">2</span>, perplexity<span style="color:#ff79c6">=</span><span style="color:#bd93f9">50</span>, n_epochs<span style="color:#ff79c6">=</span><span style="color:#bd93f9">200</span>, lr<span style="color:#ff79c6">=</span><span style="color:#bd93f9">0.1</span>)
+X_sne <span style="color:#ff79c6">=</span> sne<span style="color:#ff79c6">.</span>fit_transform(X_sc)
+
+plot_result(X_sne, y, <span style="color:#f1fa8c">&#34;SNE&#34;</span>)
+</code></pre></div><p>[f:id:ykskks:20201217233733p:plain]</p>
+<p>100イテレーションくらいで大体収束してるのがわかります。</p>
+<p>[f:id:ykskks:20201217233745p:plain]</p>
+<p>全体としてはPCAよりも各数字がギュッとまとまっており、重なりも少なく、データの構造をよく捉えているように見えます。</p>
+<h2 id="t-sne">t-SNE</h2>
+<p>いよいよt-SNEですが、SNEまで実装してしまえば、大したことはありません。</p>
+<p>主な変更点は以下の二つです。（詳細は論文を参照願います）</p>
+<ul>
+<li><strong>symmetric</strong>な類似度の導入</li>
+<li>低次元空間の類似度の計算に正規分布ではなく、裾の重い自由度1の<code>t分布</code>を用いる</li>
+</ul>
+<p>実際、上記の2点以外はSNEと基本的に同じなのでSNEクラスを継承します。</p>
+<p>t-SNEでは先ほども述べたように、低次元と高次元で類似度の算出方法が異なるのでその部分の変更を加えます。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#ff79c6">class</span> <span style="color:#50fa7b">TSNE</span>(SNE):
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">_similarity</span>(self, x1, x2, sigma, mode):
+        <span style="color:#ff79c6">if</span> mode <span style="color:#ff79c6">==</span> <span style="color:#f1fa8c">&#34;h&#34;</span>:
+            <span style="color:#ff79c6">return</span> torch<span style="color:#ff79c6">.</span>exp(<span style="color:#ff79c6">-</span> ((x1 <span style="color:#ff79c6">-</span> x2) <span style="color:#ff79c6">**</span> <span style="color:#bd93f9">2</span>)<span style="color:#ff79c6">.</span>sum(dim<span style="color:#ff79c6">=</span><span style="color:#bd93f9">1</span>) <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">2</span> <span style="color:#ff79c6">*</span> (sigma <span style="color:#ff79c6">**</span> <span style="color:#bd93f9">2</span>))
+        <span style="color:#ff79c6">if</span> mode <span style="color:#ff79c6">==</span> <span style="color:#f1fa8c">&#34;l&#34;</span>:
+            <span style="color:#ff79c6">return</span> (<span style="color:#bd93f9">1</span> <span style="color:#ff79c6">+</span> ((x1 <span style="color:#ff79c6">-</span> x2) <span style="color:#ff79c6">**</span> <span style="color:#bd93f9">2</span>)<span style="color:#ff79c6">.</span>sum(dim<span style="color:#ff79c6">=</span><span style="color:#bd93f9">1</span>)) <span style="color:#ff79c6">**</span> (<span style="color:#ff79c6">-</span><span style="color:#bd93f9">1</span>)
+
+    <span style="color:#ff79c6">def</span> <span style="color:#50fa7b">_compute_cond_prob</span>(self, similarities, mode):
+        cond_prob_matrix <span style="color:#ff79c6">=</span> torch<span style="color:#ff79c6">.</span>zeros((self<span style="color:#ff79c6">.</span>N, self<span style="color:#ff79c6">.</span>N))
+        <span style="color:#ff79c6">for</span> i <span style="color:#ff79c6">in</span> <span style="color:#8be9fd;font-style:italic">range</span>(self<span style="color:#ff79c6">.</span>N):
+            p_i <span style="color:#ff79c6">=</span> similarities[i] <span style="color:#ff79c6">/</span> similarities[i]<span style="color:#ff79c6">.</span>sum()
+            cond_prob_matrix[i] <span style="color:#ff79c6">=</span> p_i
+
+        <span style="color:#ff79c6">if</span> mode <span style="color:#ff79c6">==</span> <span style="color:#f1fa8c">&#34;h&#34;</span>:
+            cond_prob_matrix <span style="color:#ff79c6">=</span> (cond_prob_matrix <span style="color:#ff79c6">+</span> torch<span style="color:#ff79c6">.</span>t(cond_prob_matrix)) <span style="color:#ff79c6">/</span> <span style="color:#bd93f9">2</span>
+        <span style="color:#ff79c6">return</span> cond_prob_matrix
+</code></pre></div><h3 id="結果-1">結果</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">tsne <span style="color:#ff79c6">=</span> TSNE(n_components<span style="color:#ff79c6">=</span><span style="color:#bd93f9">2</span>, perplexity<span style="color:#ff79c6">=</span><span style="color:#bd93f9">50</span>, n_epochs<span style="color:#ff79c6">=</span><span style="color:#bd93f9">500</span>, lr<span style="color:#ff79c6">=</span><span style="color:#bd93f9">0.1</span>)
+X_tsne <span style="color:#ff79c6">=</span> tsne<span style="color:#ff79c6">.</span>fit_transform(X_sc)
+
+plot_result(X_tsne, y, <span style="color:#f1fa8c">&#34;t-SNE&#34;</span>)
+</code></pre></div><p>[f:id:ykskks:20201217233759p:plain]</p>
+<p>[f:id:ykskks:20201217233812p:plain]</p>
+<p>どうでしょうか？</p>
+<p>主観ですが、各グループごとのまとまり・各グループ間の分離ともにかなりいい感じになり、
+より見た目がすっきりした感があります。（SNEはごちゃごちゃ全体が固まっている感じ、論文でcrowding problemと呼ばれているもの？）</p>
+<p>perplexityの値は割と敏感らしいのでもう少し調節しても良いと思いますが、とりあえずそれっぽい結果が出ているのでとりあえずここまでにしようと思います。</p>
+<p>（ちなみに）</p>
+<p>青色で表されている2がうまくまとまってないのですが、これは今回のデータの中にかなり性質の違う2たちが混在していたことによるようです。（文字の傾きにかなりばらつきがある）</p>
+<p>[f:id:ykskks:20201217233842p:plain]</p>
+<h2 id="todo">TODO</h2>
+<ul>
+<li><code>perplexity</code>の部分の探索をちゃんとやる</li>
+<li>高速化(高次元空間で遠いデータポイント間の類似度をゼロにしてしまうなど近似手法があるようです&hellip;)</li>
+</ul>
+<p>何か間違い等ありましたら遠慮なくご指摘ください。</p>
+
+  </article><div class="bg-blue-100 dark:bg-gray-900">
+  <div class="container px-6 py-12 mx-auto max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+    <div>
+      <div class="text-2xl font-bold mb-2">Follow me</div>
+      <p class="opacity-60">I work on everything coding and tweet developer memes</p>
+    </div>
+    <ul class="flex justify-center gap-4">
+      
+      <li>
+        <a
+          href="https://twitter.com/"
+          target="_blank"
+          rel="noopener"
+          aria-label="Twitter"
+          class="p-2 inline-block rounded-full border border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-800 cursor-pointer transition-colors dark:text-gray-600 dark:hover:border-gray-300 dark:hover:text-gray-300"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path
+              d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z"
+            />
+          </svg>
+        </a>
+      </li>
+      
+      
+      <li>
+        <a
+          href="https://linkedin.com/in/"
+          target="_blank"
+          rel="noopener"
+          aria-label="LinkedIn"
+          class="p-2 inline-block rounded-full border border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-800 cursor-pointer transition-colors dark:text-gray-600 dark:hover:border-gray-300 dark:hover:text-gray-300"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <rect x="4" y="4" width="16" height="16" rx="2" />
+            <line x1="8" y1="11" x2="8" y2="16" />
+            <line x1="8" y1="8" x2="8" y2="8.01" />
+            <line x1="12" y1="16" x2="12" y2="11" />
+            <path d="M16 16v-3a2 2 0 0 0 -4 0" />
+          </svg>
+        </a>
+      </li>
+      
+      
+      <li>
+        <a
+          href="https://github.com/"
+          target="_blank"
+          rel="noopener"
+          aria-label="GitHub"
+          class="p-2 inline-block rounded-full border border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-800 cursor-pointer transition-colors dark:text-gray-600 dark:hover:border-gray-300 dark:hover:text-gray-300"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path
+              d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"
+            />
+          </svg>
+        </a>
+      </li>
+      
+      
+      <li>
+        <a
+          href="https://medium.com/"
+          target="_blank"
+          rel="noopener"
+          aria-label="Medium"
+          class="p-2 inline-block rounded-full border border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-800 cursor-pointer transition-colors dark:text-gray-600 dark:hover:border-gray-300 dark:hover:text-gray-300"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <rect x="4" y="4" width="16" height="16" rx="2" />
+            <path d="M8 9h1l3 3l3 -3h1" />
+            <line x1="8" y1="15" x2="10" y2="15" />
+            <line x1="14" y1="15" x2="16" y2="15" />
+            <line x1="9" y1="9" x2="9" y2="15" />
+            <line x1="15" y1="9" x2="15" y2="15" />
+          </svg>
+        </a>
+      </li>
+      
+      
+      <li>
+        <a
+          href="https://reddit.com/"
+          target="_blank"
+          rel="noopener"
+          aria-label="Medium"
+          class="p-2 inline-block rounded-full border border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-800 cursor-pointer transition-colors dark:text-gray-600 dark:hover:border-gray-300 dark:hover:text-gray-300"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path
+              d="M12 8c2.648 0 5.028 .826 6.675 2.14a2.5 2.5 0 0 1 2.326 4.36c0 3.59 -4.03 6.5 -9 6.5c-4.875 0 -8.845 -2.8 -9 -6.294l-1 -.206a2.5 2.5 0 0 1 2.326 -4.36c1.646 -1.313 4.026 -2.14 6.674 -2.14z"
+            />
+            <path d="M12 8l1 -5l6 1" />
+            <circle cx="19" cy="4" r="1" />
+            <circle cx="9" cy="13" r=".5" fill="currentColor" />
+            <circle cx="15" cy="13" r=".5" fill="currentColor" />
+            <path d="M10 17c.667 .333 1.333 .5 2 .5s1.333 -.167 2 -.5" />
+          </svg>
+        </a>
+      </li>
+      
+      
+      <li>
+        <a
+          href="https://dribbble.com/"
+          target="_blank"
+          rel="noopener"
+          aria-label="Medium"
+          class="p-2 inline-block rounded-full border border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-800 cursor-pointer transition-colors dark:text-gray-600 dark:hover:border-gray-300 dark:hover:text-gray-300"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="icon icon-tabler icon-tabler-brand-dribbble"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <circle cx="12" cy="12" r="9" />
+            <path d="M9 3.6c5 6 7 10.5 7.5 16.2" />
+            <path d="M6.4 19c3.5 -3.5 6 -6.5 14.5 -6.4" />
+            <path d="M3.1 10.75c5 0 9.814 -.38 15.314 -5" />
+          </svg>
+        </a>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+    </main><footer class="container p-6 mx-auto flex justify-between items-center">
+  <span class="text-sm font-light">
+    
+    2021 © Blog
+    
+  </span>
+  <span onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="p-1 cursor-pointer">
+    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <path d="M18 15l-6 -6l-6 6h12" />
+    </svg>
+  </span>
+</footer>
+
+<div class="search-ui absolute top-0 left-0 w-full h-full bg-white dark:bg-gray-800 hidden">
+  <div class="container max-w-3xl mx-auto p-12">
+    <div class="relative">
+      <div class="my-4 text-center text-2xl font-bold">Search</div>
+
+      <span class="p-2 absolute right-0 top-0 cursor-pointer close-search">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5"
+          stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </span>
+    </div>
+
+    <input type="search" class="py-2 px-3 w-full dark:text-black border dark:border-transparent"
+      placeholder="Enter search query" />
+
+    <div class="search-results text-lg font-medium my-4 hidden">Results</div>
+    <ul class="search-list my-2">
+
+    </ul>
+
+    <div class="no-results text-center my-8 hidden">
+      <div class="text-xl font-semibold mb-2">No results found</div>
+      <p class="font-light text-sm">Try adjusting your search query</p>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<script src="https://blist.vercel.app/js/scripts.min.js"></script>
+
+
+
+
+<script>
+  
+  const darkmode = document.querySelector('.toggle-dark-mode');
+  function toggleDarkMode() {
+    if (document.documentElement.classList.contains('dark')) {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('darkmode', 'light')
+    } else {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('darkmode', 'dark')
+    }
+  }
+  if (darkmode) {
+    darkmode.addEventListener('click', toggleDarkMode);
+  }
+
+  const isDark = localStorage.getItem('darkmode');
+  if(isDark && isDark === 'dark') {
+    toggleDarkMode();
+  }
+</script>
+</body>
+</html>
