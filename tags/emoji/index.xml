@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>emoji on Blog</title>
-    <link>https://blist.vercel.app/tags/emoji/</link>
+    <link>https://ykskks.github.io/tags/emoji/</link>
     <description>Recent content in emoji on Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>ja</language>
-    <lastBuildDate>Thu, 15 Jul 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://blist.vercel.app/tags/emoji/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 15 Jul 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://ykskks.github.io/tags/emoji/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>PyTorchでt-SNEを実装</title>
-      <link>https://blist.vercel.app/blog/test/</link>
+      <link>https://ykskks.github.io/blog/test/</link>
       <pubDate>Thu, 15 Jul 2021 00:00:00 +0000</pubDate>
       
-      <guid>https://blist.vercel.app/blog/test/</guid>
+      <guid>https://ykskks.github.io/blog/test/</guid>
       <description>概要 高次元データの可視化によく用いられるt-SNEの動作を理解するために、論文を読んで実装してみることにしました。パラメータ更新時の勾配計算で楽をしたいのでPyTorchで実装します。
 基本的には元論文を参考に実装を行いました。
 今回使ったコードはGithubにあげています。
