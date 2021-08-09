@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>kaggle on Blog</title>
+    <link>https://ykskks.github.io/tags/kaggle/</link>
+    <description>Recent content in kaggle on Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>ja</language><atom:link href="https://ykskks.github.io/tags/kaggle/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>kaggle - CommonLit Readability Prize 参加記</title>
+      <link>https://ykskks.github.io/blog/commonlit/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://ykskks.github.io/blog/commonlit/</guid>
+      <description>概要 先日までkaggleのCommonLit Readability Prizeに参加しており、若干のshakedownをしてしまったものの最終的に132位で銀メダルを獲得することができました。
+簡単にいうと、本コンペの目的は与えられた文章の「読みやすさ(Readability)」を予測することです。この指標は絶対的に定義できるものではないので、人間（現役教師）に2つの文章の比較を行ってもらった結果を元にこちらのDiscussionのような方法で計算されています。
+コンペの詳細はリンクを参照していただくとして、ここでは自分の取り組みと上位陣のSolutionをまとめたいと思います。
+自分の解法 CV KFold
+モデル 以下のモデルたちのNetflix Blending
+ RoBERTa-large (22, 23, 24層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (12, 18, 24層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (7, 15, 23層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (1~24層のhidden statesのmeanをとってattention pooling → Linear) RoBERTa-large (2, 4, &amp;hellip; , 22, 24層のhidden statesのmeanをとってattention pooling → Linear) RoBERTa-base (コンペデータでpretrain、10, 11, 12層のhidden statesのmeanをとってconcat → Linear) Pre-trained Roberta solution in PyTorch (公開Notebook) CommonLit Readability Prize-RoBERTa Torch|Infer 3 (公開Notebook)  Public LBへのoverfitを避けるためNetflix blendingの正則化は大きめに設定した（0.</description>
+    </item>
+    
+  </channel>
+</rss>

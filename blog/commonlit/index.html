@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="icon" href="image/cat_icon.png">
+
+  <title>
+    kaggle - CommonLit Readability Prize 参加記 - Blog
+  </title>
+  <meta name="description" content="概要 先日までkaggleのCommonLit Readability Prizeに参加しており、若干のshakedownをしてしまったものの最終的に132位で銀メダルを獲得することができました。
+簡単にいうと、本コンペの目的は与えられた文章の「読みやすさ(Readability)」を予測することです。この指標は絶対的に定義できるものではないので、人間（現役教師）に2つの文章の比較を行ってもらった結果を元にこちらのDiscussionのような方法で計算されています。
+コンペの詳細はリンクを参照していただくとして、ここでは自分の取り組みと上位陣のSolutionをまとめたいと思います。
+自分の解法 CV KFold
+モデル 以下のモデルたちのNetflix Blending
+ RoBERTa-large (22, 23, 24層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (12, 18, 24層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (7, 15, 23層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (1~24層のhidden statesのmeanをとってattention pooling → Linear) RoBERTa-large (2, 4, &hellip; , 22, 24層のhidden statesのmeanをとってattention pooling → Linear) RoBERTa-base (コンペデータでpretrain、10, 11, 12層のhidden statesのmeanをとってconcat → Linear) Pre-trained Roberta solution in PyTorch (公開Notebook) CommonLit Readability Prize-RoBERTa Torch|Infer 3 (公開Notebook)  Public LBへのoverfitを避けるためNetflix blendingの正則化は大きめに設定した（0." />
+  <meta name="author" content="kohei" />
+  <meta name="generator" content="Hugo 0.87.0" /><link
+    rel="stylesheet"
+    href="https://ykskks.github.io/css/styles.min.358c26f64da76d78ad9a99945dc51f893823588a545bf52418ee5f3ef7a41e2a.css"
+    integrity="sha256-NYwm9k2nbXitmpmUXcUfiTgjWIpUW/UkGO5fPvekHio="
+  />
+  
+  
+
+  <meta property="og:title" content="kaggle - CommonLit Readability Prize 参加記" />
+<meta property="og:description" content="概要 先日までkaggleのCommonLit Readability Prizeに参加しており、若干のshakedownをしてしまったものの最終的に132位で銀メダルを獲得することができました。
+簡単にいうと、本コンペの目的は与えられた文章の「読みやすさ(Readability)」を予測することです。この指標は絶対的に定義できるものではないので、人間（現役教師）に2つの文章の比較を行ってもらった結果を元にこちらのDiscussionのような方法で計算されています。
+コンペの詳細はリンクを参照していただくとして、ここでは自分の取り組みと上位陣のSolutionをまとめたいと思います。
+自分の解法 CV KFold
+モデル 以下のモデルたちのNetflix Blending
+ RoBERTa-large (22, 23, 24層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (12, 18, 24層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (7, 15, 23層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (1~24層のhidden statesのmeanをとってattention pooling → Linear) RoBERTa-large (2, 4, &hellip; , 22, 24層のhidden statesのmeanをとってattention pooling → Linear) RoBERTa-base (コンペデータでpretrain、10, 11, 12層のhidden statesのmeanをとってconcat → Linear) Pre-trained Roberta solution in PyTorch (公開Notebook) CommonLit Readability Prize-RoBERTa Torch|Infer 3 (公開Notebook)  Public LBへのoverfitを避けるためNetflix blendingの正則化は大きめに設定した（0." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ykskks.github.io/blog/commonlit/" /><meta property="article:section" content="blog" />
+
+
+
+
+  <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="kaggle - CommonLit Readability Prize 参加記"/>
+<meta name="twitter:description" content="概要 先日までkaggleのCommonLit Readability Prizeに参加しており、若干のshakedownをしてしまったものの最終的に132位で銀メダルを獲得することができました。
+簡単にいうと、本コンペの目的は与えられた文章の「読みやすさ(Readability)」を予測することです。この指標は絶対的に定義できるものではないので、人間（現役教師）に2つの文章の比較を行ってもらった結果を元にこちらのDiscussionのような方法で計算されています。
+コンペの詳細はリンクを参照していただくとして、ここでは自分の取り組みと上位陣のSolutionをまとめたいと思います。
+自分の解法 CV KFold
+モデル 以下のモデルたちのNetflix Blending
+ RoBERTa-large (22, 23, 24層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (12, 18, 24層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (7, 15, 23層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (1~24層のhidden statesのmeanをとってattention pooling → Linear) RoBERTa-large (2, 4, &hellip; , 22, 24層のhidden statesのmeanをとってattention pooling → Linear) RoBERTa-base (コンペデータでpretrain、10, 11, 12層のhidden statesのmeanをとってconcat → Linear) Pre-trained Roberta solution in PyTorch (公開Notebook) CommonLit Readability Prize-RoBERTa Torch|Infer 3 (公開Notebook)  Public LBへのoverfitを避けるためNetflix blendingの正則化は大きめに設定した（0."/>
+
+  <meta itemprop="name" content="kaggle - CommonLit Readability Prize 参加記">
+<meta itemprop="description" content="概要 先日までkaggleのCommonLit Readability Prizeに参加しており、若干のshakedownをしてしまったものの最終的に132位で銀メダルを獲得することができました。
+簡単にいうと、本コンペの目的は与えられた文章の「読みやすさ(Readability)」を予測することです。この指標は絶対的に定義できるものではないので、人間（現役教師）に2つの文章の比較を行ってもらった結果を元にこちらのDiscussionのような方法で計算されています。
+コンペの詳細はリンクを参照していただくとして、ここでは自分の取り組みと上位陣のSolutionをまとめたいと思います。
+自分の解法 CV KFold
+モデル 以下のモデルたちのNetflix Blending
+ RoBERTa-large (22, 23, 24層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (12, 18, 24層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (7, 15, 23層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (1~24層のhidden statesのmeanをとってattention pooling → Linear) RoBERTa-large (2, 4, &hellip; , 22, 24層のhidden statesのmeanをとってattention pooling → Linear) RoBERTa-base (コンペデータでpretrain、10, 11, 12層のhidden statesのmeanをとってconcat → Linear) Pre-trained Roberta solution in PyTorch (公開Notebook) CommonLit Readability Prize-RoBERTa Torch|Infer 3 (公開Notebook)  Public LBへのoverfitを避けるためNetflix blendingの正則化は大きめに設定した（0.">
+
+<meta itemprop="wordCount" content="374">
+<meta itemprop="keywords" content="kaggle,自然言語処理," />
+</head>
+<body class="dark:bg-gray-800 dark:text-white relative"><header class="container flex justify-around md:justify-between gap-4 flex-wrap p-6 mx-auto">
+  <a href="https://ykskks.github.io/" class="capitalize font-extrabold text-2xl">
+    Blog
+  </a>
+  <ul class="flex items-center gap-4 lg:gap-6">
+
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="/tags">Tags</a></li>
+    
+
+    
+      <li><a href="https://ykskks.github.io/blog/">Blogs</a></li>
+    
+
+    
+    <li class="grid place-items-center">
+      <span class="open-search inline-block cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-width="1.5"
+          stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+          <circle cx="10" cy="10" r="7" />
+          <line x1="21" y1="21" x2="15" y2="15" />
+        </svg>
+      </span>
+    </li>
+    
+
+    
+    <li class="grid place-items-center">
+      <span class="toggle-dark-mode inline-block cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5"
+          stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <circle cx="12" cy="12" r="3" />
+          <line x1="12" y1="5" x2="12" y2="5.01" />
+          <line x1="17" y1="7" x2="17" y2="7.01" />
+          <line x1="19" y1="12" x2="19" y2="12.01" />
+          <line x1="17" y1="17" x2="17" y2="17.01" />
+          <line x1="12" y1="19" x2="12" y2="19.01" />
+          <line x1="7" y1="17" x2="7" y2="17.01" />
+          <line x1="5" y1="12" x2="5" y2="12.01" />
+          <line x1="7" y1="7" x2="7" y2="7.01" />
+        </svg>
+      </span>
+    </li>
+    
+  </ul>
+</header>
+<main>
+
+  
+  <div class="relative max-w-5xl mx-auto px-4">
+    <img src="/image/commonlit/cover.png" class="rounded-lg shadow-sm w-full object-contain" />
+    <div class="absolute top-4 right-8 rounded shadow bg-white text-gray-900 dark:bg-gray-900 dark:text-white px-2 py-0.5">
+      
+    </div>
+  </div>
+  
+
+  <article class="prose lg:prose-lg mx-auto my-8 dark:prose-dark px-4">
+
+    <h1 class="text-2xl font-bold mb-2">kaggle - CommonLit Readability Prize 参加記</h1>
+
+    <h2 id="概要">概要</h2>
+<p>先日までkaggleの<a href="https://www.kaggle.com/c/commonlitreadabilityprize/overview">CommonLit Readability Prize</a>に参加しており、若干のshakedownをしてしまったものの最終的に132位で銀メダルを獲得することができました。</p>
+<img src="/image/commonlit/lb.png">
+<p>簡単にいうと、本コンペの目的は与えられた文章の「<strong>読みやすさ(Readability)</strong>」を予測することです。この指標は絶対的に定義できるものではないので、人間（現役教師）に2つの文章の比較を行ってもらった結果を元に<a href="https://www.kaggle.com/c/commonlitreadabilityprize/discussion/240423">こちらのDiscussion</a>のような方法で計算されています。</p>
+<p>コンペの詳細はリンクを参照していただくとして、ここでは自分の取り組みと上位陣のSolutionをまとめたいと思います。</p>
+<h2 id="自分の解法">自分の解法</h2>
+<h4 id="cv">CV</h4>
+<p>KFold</p>
+<h4 id="モデル">モデル</h4>
+<p>以下のモデルたちの<a href="https://upura.hatenablog.com/entry/2020/03/01/190400"><strong>Netflix Blending</strong></a></p>
+<ul>
+<li>RoBERTa-large (22, 23, 24層のhidden statesのmeanをとってconcat → Linear)</li>
+<li>RoBERTa-large (12, 18, 24層のhidden statesのmeanをとってconcat → Linear)</li>
+<li>RoBERTa-large (7, 15, 23層のhidden statesのmeanをとってconcat → Linear)</li>
+<li>RoBERTa-large (1~24層のhidden statesのmeanをとってattention pooling → Linear)</li>
+<li>RoBERTa-large (2, 4, &hellip; , 22, 24層のhidden statesのmeanをとってattention pooling → Linear)</li>
+<li>RoBERTa-base (<a href="https://www.kaggle.com/maunish/clrp-roberta-base">コンペデータでpretrain</a>、10, 11, 12層のhidden statesのmeanをとってconcat → Linear)</li>
+<li><a href="https://www.kaggle.com/andretugan/pre-trained-roberta-solution-in-pytorch">Pre-trained Roberta solution in PyTorch (公開Notebook)</a></li>
+<li><a href="https://www.kaggle.com/rhtsingh/commonlit-readability-prize-roberta-torch-infer-3">CommonLit Readability Prize-RoBERTa Torch|Infer 3 (公開Notebook)</a></li>
+</ul>
+<p>Public LBへのoverfitを避けるためNetflix blendingの正則化は大きめに設定した（0.01）</p>
+<h4 id="学習">学習</h4>
+<ul>
+<li>epochs: 3</li>
+<li>batch size: 8</li>
+<li>optimizer: AdamW</li>
+<li>lr: 2e-5</li>
+<li>scheduler: cosine_warmup</li>
+<li>evaluate_interval: 20 steps</li>
+<li><strong>no dropout</strong></li>
+</ul>
+<h4 id="うまく行ったこと">うまく行ったこと</h4>
+<ul>
+<li>Differential Learning Rate
+<ul>
+<li>最終層からdecay_factor=0.975で徐々にlrを小さくする</li>
+</ul>
+</li>
+<li>no dropout
+<ul>
+<li>ある公開Notebookがtraining stepごとにmodel.train()を呼んでいないにも関わらずうまくいっていることから気づいた（<a href="https://www.kaggle.com/rhtsingh/commonlit-readability-prize-roberta-torch-fit/comments#1363853">このコメント</a>）</li>
+<li>他にも同様の報告が<a href="https://www.kaggle.com/c/commonlitreadabilityprize/discussion/260729">ちらほら</a></li>
+</ul>
+</li>
+<li>fewer epochs</li>
+<li>Linearは2層 &gt; 1層</li>
+</ul>
+<h4 id="うまく行かなかったこと">うまく行かなかったこと</h4>
+<ul>
+<li>SWA</li>
+<li>spacyのlinguistic features（posとdep）を1d-CNNで処理し、BERTのLinearに結合
+<ul>
+<li>誤差が大きいexampleを見ると、単語自体はそれほど難しくないが、構文が難しいものがうまく予測されていなかったため、その情報を明示的に加えた</li>
+</ul>
+</li>
+<li>robust CV
+<ul>
+<li>スコアが一定ラインを超えてからCVとLBの相関がなくなった</li>
+<li>今回はtestとtrainの分布が異なる（testがよりmodernな文章を多く含む）ことが明らかにされていたため、この情報を活用しようとした</li>
+<li>modern / non-modern分類機を作成し、modernな文章の予測値をゼロにすることでtestのmodern比率が大体40%であることを推測した（trainは30%ほど、推測が正しかったのか不明）</li>
+<li>これを元にmodernな文章の比率をtestに揃えたCVを作成した</li>
+</ul>
+</li>
+<li>RoBERTa以外のモデル</li>
+</ul>
+<h2 id="1st-place-solutionhttpswwwkagglecomccommonlitreadabilityprizediscussion257844"><a href="https://www.kaggle.com/c/commonlitreadabilityprize/discussion/257844">1st place solution</a></h2>
+<h4 id="cv-1">CV</h4>
+<p>6-fold crossvalidation or bootstrapping</p>
+<h4 id="external-data">External data</h4>
+<ul>
+<li>simplewiki, wikipediaなどからスクレイピングでコーパス作成</li>
+<li>学習データと同じくらいの長さの文章のみにフィルタリング</li>
+<li>Sentence-BERTを用いて、コーパスからtrainの各文章とコサイン類似度top5の文章を抽出</li>
+</ul>
+<h4 id="pseudo-labeling">Pseudo-labeling</h4>
+<ul>
+<li>trainで学習したモデルでexternal dataにラベル付与</li>
+<li>trainの対応する文章と大きく離れたラベルが付与された場合は除外</li>
+</ul>
+<h4 id="学習-1">学習</h4>
+<ul>
+<li>pseudo labelデータで学習、trainデータで評価</li>
+<li>trainデータで学習</li>
+</ul>
+<h4 id="モデル-1">モデル</h4>
+<ul>
+<li>albert-xxlarge, deberta-large, roberta-large, electra-large and roberta-base</li>
+<li>Ridge regressionでstacking</li>
+</ul>
+<h2 id="2nd-place-solutionhttpswwwkagglecomccommonlitreadabilityprizediscussion258328"><a href="https://www.kaggle.com/c/commonlitreadabilityprize/discussion/258328">2nd place solution</a></h2>
+<h4 id="cv-2">CV</h4>
+<p>targetをbinningしてStratified KFold</p>
+<h4 id="モデル-2">モデル</h4>
+<ul>
+<li>roberta-base + svr, roberta-base + ridge, roberta-base, roberta-large, muppet-roberta-large, bart-large, electra-large, funnel-large-base, deberta-large, deberta-v2-xlarge, mpnet-base, deberta-v2-xxlarge, funnel-large, gpt2-medium, albert-v2-xxlarge, electra-base, bert-base-uncased, t5-large, distilbart-cnn-12-6</li>
+<li><strong>nelder-mead法</strong>によりblendingの重みを決定</li>
+<li>LBを重視した</li>
+</ul>
+<h4 id="post-process">post process</h4>
+<ul>
+<li>予測値によって異なる係数をかける</li>
+<li>係数はnelder-mead法により求め、Public LBで調節</li>
+<li>閾値はPublic LBとCVで調節</li>
+</ul>
+<h2 id="3rd-place-solutionhttpswwwkagglecomccommonlitreadabilityprizediscussion258095"><a href="https://www.kaggle.com/c/commonlitreadabilityprize/discussion/258095">3rd place solution</a></h2>
+<h4 id="external-data-1">External data</h4>
+<ul>
+<li>simplewiki, children&rsquo;s book test, OneStopEnglishCorpus</li>
+</ul>
+<h4 id="pseudo-labeling-1">Pseudo-labeling</h4>
+<ul>
+<li>trainで学習したモデルでexternal dataにラベル付与</li>
+</ul>
+<h4 id="学習-2">学習</h4>
+<p>以下の<strong>サイクルを繰り返した</strong></p>
+<ul>
+<li>pseudo labelデータとtrainデータで学習</li>
+<li>新しいモデルでexternal dataをrelabel</li>
+</ul>
+<h4 id="モデル-3">モデル</h4>
+<ul>
+<li>deberta-large, roberta-large, roberta-base</li>
+<li>simple average</li>
+</ul>
+<h2 id="4th-place-solutionhttpswwwkagglecomccommonlitreadabilityprizediscussion258148"><a href="https://www.kaggle.com/c/commonlitreadabilityprize/discussion/258148">4th place solution</a></h2>
+<h4 id="cv-3">CV</h4>
+<ul>
+<li>targetをbinningしてStratified KFold</li>
+<li>データが小さく結果が安定しないため、上記のCVをseedを変えて行い、その平均をCV scoreの算出に用いた (5folds x 5seeds=25runs)</li>
+<li>CV-LB gapは0.01ほどあったが相関は十分だった</li>
+</ul>
+<h4 id="モデル-4">モデル</h4>
+<ul>
+<li>microsoft/deberta-large, microsoft/deberta-base, deepset/roberta-base-squad2, deepset/roberta-large-squad2, distilroberta-base, funnel-transformer/large-base, bert-large-uncased, bert-large-uncased, facebook/bart-base, facebook/bart-large, microsoft/deberta-large, albert-large-v2, , sentence-transformers/LaBSE, bert-large-cased-whole-word-masking, bert-large-cased, xlm-roberta-large, google/electra-large-discriminator, sentence-transformers/paraphrase-mpnet-base-v2</li>
+<li>全モデルでlayer方向ではなく、ouptutのsequence方向のattentionを用いた</li>
+<li>RidgeとBayesianRidgeでstacking</li>
+</ul>
+<h4 id="学習-3">学習</h4>
+<ul>
+<li>Epochs: 6 with SWA after epoch 3</li>
+<li>No dropout</li>
+</ul>
+<h2 id="5th-place-solutionhttpswwwkagglecomccommonlitreadabilityprizediscussion259729"><a href="https://www.kaggle.com/c/commonlitreadabilityprize/discussion/259729">5th place solution</a></h2>
+<h4 id="cv-4">CV</h4>
+<p>KFold <strong>without shuffle</strong></p>
+<ul>
+<li>trainデータには順序がありソースごとに並んでいた</li>
+<li>testもtrainとは異なるソースの文章が含まれている可能性がある</li>
+<li>このout-of-distribution汎化性能をよりよく図るためにshuffleをしなかった</li>
+</ul>
+<h4 id="モデル-5">モデル</h4>
+<ul>
+<li>roberta-large, roberta-base, deberta-large, funnel-large, electra-large</li>
+<li>linear head followed by mean pooling on last hidden state</li>
+<li>RidgeとLightGBMでstackingして平均</li>
+<li>LightGBMにはhand-crafted featuresも加えたほうがよかった</li>
+</ul>
+<h4 id="学習-4">学習</h4>
+<ul>
+<li>dropout
+<ul>
+<li>原因不明だがtrain/inference両方でdropoutをしたほうがよかった</li>
+</ul>
+</li>
+<li>epochs: 5</li>
+<li>cosine schedule</li>
+<li>differential lr</li>
+<li>re-initialize some layers</li>
+</ul>
+<h2 id="6th-place-solutionhttpswwwkagglecomccommonlitreadabilityprizediscussion258554"><a href="https://www.kaggle.com/c/commonlitreadabilityprize/discussion/258554">6th place solution</a></h2>
+<h4 id="cv-5">CV</h4>
+<p>Stratified 5-fold</p>
+<h4 id="モデル-6">モデル</h4>
+<p>QAタスクでpretrainされたモデルがよかった。いろんな事前学習モデルを試すべき</p>
+<ul>
+<li>roberta-large, microsoft/deberta-large, xlnet-large-cased, deepset/roberta-large-squad2, deepset/roberta-large-squad2, allenai/longformer-large-4096-finetuned-triviaqa, valhalla/bart-large-finetuned-squadv1, microsoft/deberta-large-mnli, ahotrod/electra_large_discriminator_squad2_512</li>
+<li>all models with <a href="https://www.kaggle.com/maunish/clrp-pytorch-roberta-finetune">Attention head</a></li>
+<li>9 modelsのattention headのoof出力に対しGaussian process regressionを使用</li>
+</ul>
+<h4 id="学習-5">学習</h4>
+<ul>
+<li>epochs: 5</li>
+<li>AdamW with SWA</li>
+<li><a href="https://www.kaggle.com/rhtsingh/on-stability-of-few-sample-transformer-fine-tuning">Layer reinitialisation</a>: last 3 transformer layers</li>
+<li>no dropout</li>
+</ul>
+<h4 id="external-data-2">External data</h4>
+<p>trainデータのurlからスクレイピング</p>
+<h4 id="pseudo-labeling-2">Pseudo-labeling</h4>
+<ul>
+<li>trainで学習したモデルでexternal dataにラベル付与</li>
+<li>学習時に同一ソースのpseudo labeled dataを追加
+<ul>
+<li>全pseudo labeled dataを追加することによるleakageを避けるため</li>
+</ul>
+</li>
+</ul>
+<h2 id="9th-place-solutionhttpswwwkagglecomccommonlitreadabilityprizediscussion259982"><a href="https://www.kaggle.com/c/commonlitreadabilityprize/discussion/259982">9th place solution</a></h2>
+<h4 id="cv-6">CV</h4>
+<ul>
+<li>KFold</li>
+<li>K=5, 10, 15, 25を試した
+<ul>
+<li>大きくするほどスコアが向上した</li>
+</ul>
+</li>
+</ul>
+<h4 id="モデル-7">モデル</h4>
+<ul>
+<li>deberta-large, roberta-large</li>
+<li><strong>cross-entropy loss</strong>が効いた</li>
+</ul>
+<h2 id="感想">感想</h2>
+<p>私にとって初めてのTransformersを使ったNLPコンペでした。初めは右も左もわからない状態でしたが、公開Notebookや論文を読んだりするなかでTransformersの仕組みや基本的な使い方がわかるようになり、参加して非常によかったと思っています。反省点は以下です。</p>
+<ul>
+<li>いろんなモデルを試すべきだった
+<ul>
+<li>Solutionを読んで存在を知ったモデルが多数あった</li>
+</ul>
+</li>
+<li>アンサンブルはもっと工夫できた</li>
+<li>Pseudo-labelingはいろんな場面で使えそう</li>
+</ul>
+<p>本コンペで得た知見を他のNLPコンペや業務に生かせたらと思います。</p>
+
+  </article><div class="bg-blue-100 dark:bg-gray-900">
+  <div class="container px-6 py-12 mx-auto max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+    <div>
+      <div class="text-2xl font-bold mb-2">Follow me</div>
+      <p class="opacity-60">誤りやコメントなどがあればご連絡ください。</p>
+    </div>
+    <ul class="flex justify-center gap-4">
+      
+      <li>
+        <a
+          href="https://twitter.com/ykskks"
+          target="_blank"
+          rel="noopener"
+          aria-label="Twitter"
+          class="p-2 inline-block rounded-full border border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-800 cursor-pointer transition-colors dark:text-gray-600 dark:hover:border-gray-300 dark:hover:text-gray-300"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path
+              d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z"
+            />
+          </svg>
+        </a>
+      </li>
+      
+      
+      
+      <li>
+        <a
+          href="https://github.com/ykskks"
+          target="_blank"
+          rel="noopener"
+          aria-label="GitHub"
+          class="p-2 inline-block rounded-full border border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-800 cursor-pointer transition-colors dark:text-gray-600 dark:hover:border-gray-300 dark:hover:text-gray-300"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path
+              d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"
+            />
+          </svg>
+        </a>
+      </li>
+      
+      
+      
+      
+    </ul>
+  </div>
+</div>
+    </main><footer class="container p-6 mx-auto flex justify-between items-center" height="5">
+  <span class="text-sm font-light">
+    <a target="_blank" href="https://icons8.com/icon/100068/cat">Cat</a> icon by <a target="_blank"
+      href="https://icons8.com">Icons8</a>
+  </span>
+  <span onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="p-1 cursor-pointer">
+    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" stroke-width="1.5"
+      stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M18 15l-6 -6l-6 6h12" />
+    </svg>
+  </span>
+</footer>
+
+<div class="search-ui absolute top-0 left-0 w-full h-full bg-white dark:bg-gray-800 hidden">
+  <div class="container max-w-3xl mx-auto p-12">
+    <div class="relative">
+      <div class="my-4 text-center text-2xl font-bold">Search</div>
+
+      <span class="p-2 absolute right-0 top-0 cursor-pointer close-search">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5"
+          stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </span>
+    </div>
+
+    <input type="search" class="py-2 px-3 w-full dark:text-black border dark:border-transparent"
+      placeholder="Enter search query" />
+
+    <div class="search-results text-lg font-medium my-4 hidden">Results</div>
+    <ul class="search-list my-2">
+
+    </ul>
+
+    <div class="no-results text-center my-8 hidden">
+      <div class="text-xl font-semibold mb-2">No results found</div>
+      <p class="font-light text-sm">Try adjusting your search query</p>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<script src="https://ykskks.github.io/js/scripts.min.js"></script>
+
+
+
+
+<script>
+  
+  const darkmode = document.querySelector('.toggle-dark-mode');
+  function toggleDarkMode() {
+    if (document.documentElement.classList.contains('dark')) {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('darkmode', 'light')
+    } else {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('darkmode', 'dark')
+    }
+  }
+  if (darkmode) {
+    darkmode.addEventListener('click', toggleDarkMode);
+  }
+
+  const isDark = localStorage.getItem('darkmode');
+  if (isDark && isDark === 'dark') {
+    toggleDarkMode();
+  }
+</script>
+
+<script>
+  window.MathJax = {
+    tex: {
+      tags: 'ams',  
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    },
+  };
+</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-chtml.js"></script>
+
+</body>
+</html>
