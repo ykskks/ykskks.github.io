@@ -7,13 +7,13 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>ja</language><atom:link href="https://ykskks.github.io/tags/%E8%87%AA%E7%84%B6%E8%A8%80%E8%AA%9E%E5%87%A6%E7%90%86/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>kaggle - CommonLit Readability Prize 参加記</title>
+      <title>Kaggle - CommonLit Readability Prize 参加記</title>
       <link>https://ykskks.github.io/blog/commonlit/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://ykskks.github.io/blog/commonlit/</guid>
-      <description>概要 先日までkaggleのCommonLit Readability Prizeに参加しており、若干のshakedownをしてしまったものの最終的に132位で銀メダルを獲得することができました。
-簡単にいうと、本コンペの目的は与えられた文章の「読みやすさ(Readability)」を予測することです。この指標は絶対的に定義できるものではないので、人間（現役教師）に2つの文章の比較を行ってもらった結果を元にこちらのDiscussionのような方法で計算されています。
+      <description>概要 先日までKaggleのCommonLit Readability Prizeに参加しており、若干のshakedownをしてしまったものの最終的に132位で銀メダルを獲得することができました。
+簡単にいうと、本コンペの目的は与えられた文章の「読みやすさ(Readability)」を予測することです。目的変数は連続値で、人間（現役教師）に2つの文章の比較を行ってもらった結果を元にこちらのDiscussionのような方法で計算されています。タスクのタイプとしては回帰であり、評価指標はRMSEでした。
 コンペの詳細はリンクを参照していただくとして、ここでは自分の取り組みと上位陣のSolutionをまとめたいと思います。
 自分の解法 CV KFold
 モデル 以下のモデルたちのNetflix Blending

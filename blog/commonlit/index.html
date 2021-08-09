@@ -6,10 +6,10 @@
   <link rel="icon" href="image/cat_icon.png">
 
   <title>
-    kaggle - CommonLit Readability Prize 参加記 - Blog
+    Kaggle - CommonLit Readability Prize 参加記 - Blog
   </title>
-  <meta name="description" content="概要 先日までkaggleのCommonLit Readability Prizeに参加しており、若干のshakedownをしてしまったものの最終的に132位で銀メダルを獲得することができました。
-簡単にいうと、本コンペの目的は与えられた文章の「読みやすさ(Readability)」を予測することです。この指標は絶対的に定義できるものではないので、人間（現役教師）に2つの文章の比較を行ってもらった結果を元にこちらのDiscussionのような方法で計算されています。
+  <meta name="description" content="概要 先日までKaggleのCommonLit Readability Prizeに参加しており、若干のshakedownをしてしまったものの最終的に132位で銀メダルを獲得することができました。
+簡単にいうと、本コンペの目的は与えられた文章の「読みやすさ(Readability)」を予測することです。目的変数は連続値で、人間（現役教師）に2つの文章の比較を行ってもらった結果を元にこちらのDiscussionのような方法で計算されています。タスクのタイプとしては回帰であり、評価指標はRMSEでした。
 コンペの詳細はリンクを参照していただくとして、ここでは自分の取り組みと上位陣のSolutionをまとめたいと思います。
 自分の解法 CV KFold
 モデル 以下のモデルたちのNetflix Blending
@@ -23,9 +23,9 @@
   
   
 
-  <meta property="og:title" content="kaggle - CommonLit Readability Prize 参加記" />
-<meta property="og:description" content="概要 先日までkaggleのCommonLit Readability Prizeに参加しており、若干のshakedownをしてしまったものの最終的に132位で銀メダルを獲得することができました。
-簡単にいうと、本コンペの目的は与えられた文章の「読みやすさ(Readability)」を予測することです。この指標は絶対的に定義できるものではないので、人間（現役教師）に2つの文章の比較を行ってもらった結果を元にこちらのDiscussionのような方法で計算されています。
+  <meta property="og:title" content="Kaggle - CommonLit Readability Prize 参加記" />
+<meta property="og:description" content="概要 先日までKaggleのCommonLit Readability Prizeに参加しており、若干のshakedownをしてしまったものの最終的に132位で銀メダルを獲得することができました。
+簡単にいうと、本コンペの目的は与えられた文章の「読みやすさ(Readability)」を予測することです。目的変数は連続値で、人間（現役教師）に2つの文章の比較を行ってもらった結果を元にこちらのDiscussionのような方法で計算されています。タスクのタイプとしては回帰であり、評価指標はRMSEでした。
 コンペの詳細はリンクを参照していただくとして、ここでは自分の取り組みと上位陣のSolutionをまとめたいと思います。
 自分の解法 CV KFold
 モデル 以下のモデルたちのNetflix Blending
@@ -37,24 +37,24 @@
 
 
   <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="kaggle - CommonLit Readability Prize 参加記"/>
-<meta name="twitter:description" content="概要 先日までkaggleのCommonLit Readability Prizeに参加しており、若干のshakedownをしてしまったものの最終的に132位で銀メダルを獲得することができました。
-簡単にいうと、本コンペの目的は与えられた文章の「読みやすさ(Readability)」を予測することです。この指標は絶対的に定義できるものではないので、人間（現役教師）に2つの文章の比較を行ってもらった結果を元にこちらのDiscussionのような方法で計算されています。
+<meta name="twitter:title" content="Kaggle - CommonLit Readability Prize 参加記"/>
+<meta name="twitter:description" content="概要 先日までKaggleのCommonLit Readability Prizeに参加しており、若干のshakedownをしてしまったものの最終的に132位で銀メダルを獲得することができました。
+簡単にいうと、本コンペの目的は与えられた文章の「読みやすさ(Readability)」を予測することです。目的変数は連続値で、人間（現役教師）に2つの文章の比較を行ってもらった結果を元にこちらのDiscussionのような方法で計算されています。タスクのタイプとしては回帰であり、評価指標はRMSEでした。
 コンペの詳細はリンクを参照していただくとして、ここでは自分の取り組みと上位陣のSolutionをまとめたいと思います。
 自分の解法 CV KFold
 モデル 以下のモデルたちのNetflix Blending
  RoBERTa-large (22, 23, 24層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (12, 18, 24層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (7, 15, 23層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (1~24層のhidden statesのmeanをとってattention pooling → Linear) RoBERTa-large (2, 4, &hellip; , 22, 24層のhidden statesのmeanをとってattention pooling → Linear) RoBERTa-base (コンペデータでpretrain、10, 11, 12層のhidden statesのmeanをとってconcat → Linear) Pre-trained Roberta solution in PyTorch (公開Notebook) CommonLit Readability Prize-RoBERTa Torch|Infer 3 (公開Notebook)  Public LBへのoverfitを避けるためNetflix blendingの正則化は大きめに設定した（0."/>
 
-  <meta itemprop="name" content="kaggle - CommonLit Readability Prize 参加記">
-<meta itemprop="description" content="概要 先日までkaggleのCommonLit Readability Prizeに参加しており、若干のshakedownをしてしまったものの最終的に132位で銀メダルを獲得することができました。
-簡単にいうと、本コンペの目的は与えられた文章の「読みやすさ(Readability)」を予測することです。この指標は絶対的に定義できるものではないので、人間（現役教師）に2つの文章の比較を行ってもらった結果を元にこちらのDiscussionのような方法で計算されています。
+  <meta itemprop="name" content="Kaggle - CommonLit Readability Prize 参加記">
+<meta itemprop="description" content="概要 先日までKaggleのCommonLit Readability Prizeに参加しており、若干のshakedownをしてしまったものの最終的に132位で銀メダルを獲得することができました。
+簡単にいうと、本コンペの目的は与えられた文章の「読みやすさ(Readability)」を予測することです。目的変数は連続値で、人間（現役教師）に2つの文章の比較を行ってもらった結果を元にこちらのDiscussionのような方法で計算されています。タスクのタイプとしては回帰であり、評価指標はRMSEでした。
 コンペの詳細はリンクを参照していただくとして、ここでは自分の取り組みと上位陣のSolutionをまとめたいと思います。
 自分の解法 CV KFold
 モデル 以下のモデルたちのNetflix Blending
  RoBERTa-large (22, 23, 24層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (12, 18, 24層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (7, 15, 23層のhidden statesのmeanをとってconcat → Linear) RoBERTa-large (1~24層のhidden statesのmeanをとってattention pooling → Linear) RoBERTa-large (2, 4, &hellip; , 22, 24層のhidden statesのmeanをとってattention pooling → Linear) RoBERTa-base (コンペデータでpretrain、10, 11, 12層のhidden statesのmeanをとってconcat → Linear) Pre-trained Roberta solution in PyTorch (公開Notebook) CommonLit Readability Prize-RoBERTa Torch|Infer 3 (公開Notebook)  Public LBへのoverfitを避けるためNetflix blendingの正則化は大きめに設定した（0.">
 
-<meta itemprop="wordCount" content="374">
-<meta itemprop="keywords" content="kaggle,自然言語処理," />
+<meta itemprop="wordCount" content="400">
+<meta itemprop="keywords" content="Kaggle,自然言語処理," />
 </head>
 <body class="dark:bg-gray-800 dark:text-white relative"><header class="container flex justify-around md:justify-between gap-4 flex-wrap p-6 mx-auto">
   <a href="https://ykskks.github.io/" class="capitalize font-extrabold text-2xl">
@@ -119,12 +119,12 @@
 
   <article class="prose lg:prose-lg mx-auto my-8 dark:prose-dark px-4">
 
-    <h1 class="text-2xl font-bold mb-2">kaggle - CommonLit Readability Prize 参加記</h1>
+    <h1 class="text-2xl font-bold mb-2">Kaggle - CommonLit Readability Prize 参加記</h1>
 
     <h2 id="概要">概要</h2>
-<p>先日までkaggleの<a href="https://www.kaggle.com/c/commonlitreadabilityprize/overview">CommonLit Readability Prize</a>に参加しており、若干のshakedownをしてしまったものの最終的に132位で銀メダルを獲得することができました。</p>
+<p>先日までKaggleの<a href="https://www.kaggle.com/c/commonlitreadabilityprize/overview">CommonLit Readability Prize</a>に参加しており、若干のshakedownをしてしまったものの最終的に132位で銀メダルを獲得することができました。</p>
 <img src="/image/commonlit/lb.png">
-<p>簡単にいうと、本コンペの目的は与えられた文章の「<strong>読みやすさ(Readability)</strong>」を予測することです。この指標は絶対的に定義できるものではないので、人間（現役教師）に2つの文章の比較を行ってもらった結果を元に<a href="https://www.kaggle.com/c/commonlitreadabilityprize/discussion/240423">こちらのDiscussion</a>のような方法で計算されています。</p>
+<p>簡単にいうと、本コンペの目的は与えられた文章の「<strong>読みやすさ(Readability)</strong>」を予測することです。目的変数は連続値で、人間（現役教師）に2つの文章の比較を行ってもらった結果を元に<a href="https://www.kaggle.com/c/commonlitreadabilityprize/discussion/240423">こちらのDiscussion</a>のような方法で計算されています。タスクのタイプとしては回帰であり、評価指標はRMSEでした。</p>
 <p>コンペの詳細はリンクを参照していただくとして、ここでは自分の取り組みと上位陣のSolutionをまとめたいと思います。</p>
 <h2 id="自分の解法">自分の解法</h2>
 <h4 id="cv">CV</h4>
@@ -333,15 +333,37 @@
 <li>deberta-large, roberta-large</li>
 <li><strong>cross-entropy loss</strong>が効いた</li>
 </ul>
-<h2 id="感想">感想</h2>
-<p>私にとって初めてのTransformersを使ったNLPコンペでした。初めは右も左もわからない状態でしたが、公開Notebookや論文を読んだりするなかでTransformersの仕組みや基本的な使い方がわかるようになり、参加して非常によかったと思っています。反省点は以下です。</p>
+<h2 id="12th-place-solutionhttpswwwkagglecomccommonlitreadabilityprizediscussion260325"><a href="https://www.kaggle.com/c/commonlitreadabilityprize/discussion/260325">12th place solution</a></h2>
+<h4 id="モデル-8">モデル</h4>
+<ul>
+<li>deberta-large, roberta-large, albert-xxlarge-v2, electra-large-discriminator</li>
+<li>Nelder-mead法でアンサンブルの重みを求めた</li>
+</ul>
+<h4 id="学習-6">学習</h4>
+<p>以下の手順で行った</p>
+<ol>
+<li>wikipediaデータでMLM事前学習</li>
+<li>trainでモデル作成</li>
+<li>wikipediaデータをpseudo-label</li>
+<li>pseudo-labled dataのうち正しそうなもののみ抽出</li>
+<li>MLMとpseudo-labelでさらに事前学習</li>
+<li>trainで学習</li>
+</ol>
+<p><strong>re-initialization</strong> of top 5 layersが効いた</p>
+<h2 id="まとめ">まとめ</h2>
+<p>私にとって初めてのTransformersを使ったNLPコンペでした。初めは右も左もわからない状態でしたが、公開Notebookや論文を読んだりするなかでTransformersの仕組みや基本的な使い方がわかるようになり、参加して非常によかったと思っています。Top solutionを読んでの感想は以下です。</p>
 <ul>
 <li>いろんなモデルを試すべきだった
 <ul>
-<li>Solutionを読んで存在を知ったモデルが多数あった</li>
+<li>まずは存在を知るところから&hellip;（Solutionを読んで存在を知ったモデルが多数あった）</li>
+<li>deberta-largeが強かったっぽい</li>
 </ul>
 </li>
-<li>アンサンブルはもっと工夫できた</li>
+<li>アンサンブルはもっと工夫できた
+<ul>
+<li>上位陣はNelder-mead法によるblendingやstackingを多く使用していた</li>
+</ul>
+</li>
 <li>Pseudo-labelingはいろんな場面で使えそう</li>
 </ul>
 <p>本コンペで得た知見を他のNLPコンペや業務に生かせたらと思います。</p>
